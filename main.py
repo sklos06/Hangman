@@ -1,9 +1,14 @@
+import random
 from tkinter import *
 from hangman import Hangman
 
 GAME_WIDTH = 1000
 GAME_HEIGHT = 600
 
+def random_word():
+    with open("words.txt","r") as file:
+        line = file.read().splitlines()
+    return random.choice(line)
 
 class Application:
     def __init__(self, w):
@@ -18,7 +23,7 @@ class Application:
 def start_game(w):
     for widgets in w.winfo_children():
         widgets.destroy()
-    hangman = Hangman(w, "dsa")
+    hangman = Hangman(w, random_word())
     hangman.create_panels()
 
 
