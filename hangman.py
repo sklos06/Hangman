@@ -1,19 +1,24 @@
+import random
 from turtle import *
 from tkinter import *
 import time
 
 
+def random_word():
+    with open("words.txt", "r") as file:
+        line = file.read().splitlines()
+    return random.choice(line)
+
+
 class Hangman:
 
-    def __init__(self, w, word):
-        self.typed = StringVar()
+    def __init__(self, w):
         self.window = w
         self.HANGMAN_WIDTH = 500
         self.HANGMAN_HEIGHT = 500
         self.mistakes = 0
-        self.used_letters = []
+        self.word = random_word().upper()
         self.guessed_fields = 0
-        self.word = word.upper()
         self.tab_letters = []
         self.keyboard = []
         self.keyboard_letters = (
@@ -26,24 +31,26 @@ class Hangman:
             widgets.destroy()
 
     def create_panels(self):
-        self.lb_typed = Label(self.window, text="Typed letters:", bg="white", font=("Arial", 20))
-        self.lb_typed.grid(row=0, column=0)
-        Label(self.window, textvariable=self.typed, bg="white").grid(row=1, column=0)
         self.frame_word = Frame(self.window, width=200, height=50, borderwidth=0)
-        self.frame_word.grid(row=2, column=0)
+        self.frame_word.grid(row=1, column=0)
         for i in range(len(self.word)):
-            self.tab_letters.append(Label(self.frame_word, text="_", font=("Arial", 20), bg="white", padx=10))
+            self.tab_letters.append(
+                Label(self.frame_word, text="_", font=("Arial", 20), bg="#5e615a", fg="white", padx=10))
             self.tab_letters[i].grid(row=0, column=i)
-        self.canvas = Canvas(self.window, width=self.HANGMAN_WIDTH, height=self.HANGMAN_HEIGHT)
-        self.canvas.grid(row=0, column=1, rowspan=3)
-        self.turtle = RawTurtle(self.canvas)
+        self.canvas = Canvas(self.window, width=self.HANGMAN_WIDTH, height=self.HANGMAN_HEIGHT, highlightthickness=0)
+
+        self.canvas.grid(row=0, column=1, rowspan=3, padx=15)
+        self.turtle = RawTurtle(self.canvas, visible=False)
+        self.canvas.config(bg="#5e615a")
 
         self.frame_keybord = Frame(self.window, height=200, width=10000)
-        self.frame_keybord.grid(row=3, column=0)
+        self.frame_keybord.grid(row=2, column=0, padx=5)
         row = 0
         column = 0
         for i in range(26):
             self.keyboard.append(Button(self.frame_keybord, text=self.keyboard_letters[i], width=4, height=2,
+                                        bg="#191a18", fg="#d5dbce", bd=1, activebackground="#222421",
+                                        activeforeground="#e9f0e1",
                                         command=lambda l=self.keyboard_letters[i]: self.__check_letter(l)))
             self.keyboard[i].grid(row=row, column=column)
             column += 1
@@ -55,17 +62,14 @@ class Hangman:
 
         for btn in self.keyboard:
             if btn["text"] == letter:
-                btn.config(state="disabled")
+                btn.config(state="disabled", bg="#343631")
 
-        if letter not in self.used_letters:
-            if letter in self.word:
-                self.__show_letter(letter)
-                self.__check_word()
-            else:
-                self.mistakes += 1
-                self.__draw_hangman()
-                self.used_letters.append(letter)
-                self.typed.set(self.used_letters)
+        if letter in self.word:
+            self.__show_letter(letter)
+            self.__check_word()
+        else:
+            self.mistakes += 1
+            self.__draw_hangman()
 
     def __show_letter(self, letter):
         for i in range(len(self.word)):
@@ -79,10 +83,10 @@ class Hangman:
             play_again(self.window, "You won!")
 
     def __draw_hangman(self):
-        self.turtle.color('black')
+        self.turtle.shape('blank')
+        self.turtle.color('white')
         self.turtle.pensize(5)
         self.turtle.penup()
-        self.turtle.shape('blank')
 
         match self.mistakes:
             case 1:
@@ -141,12 +145,14 @@ class Hangman:
 
 
 def play_again(w, result):
-    Label(w, text=result, font=("Arial", 50), bg="white").pack(side=TOP)
-    Button(w, text="Play again", height=2, width=10, command=lambda: new_game(w)).pack(padx=50, pady=100)
+    Label(w, text=result, font=("Arial", 50), fg="white", bg="#5e615a").pack(side=TOP, pady=50)
+    Button(w, text="Play again", height=2, width=10, bg="#191a18", fg="#d5dbce", activebackground="#222421",
+           activeforeground="#e9f0e1",
+           command=lambda: new_game(w)).pack(pady=100)
 
 
 def new_game(w):
     for widgets in w.winfo_children():
         widgets.destroy()
-    hangman = Hangman(w, "dsa")
+    hangman = Hangman(w)
     hangman.create_panels()
